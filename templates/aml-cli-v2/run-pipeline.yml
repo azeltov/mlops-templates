@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License.
+
 parameters:
   - name: pipeline_file
     type: string
@@ -25,15 +28,15 @@ steps:
           echo "Status query failed"
           exit 4
         fi
-        running=("Queued" "Starting" "Preparing" "Running" "Finalizing")
+        running=("NotStarted" "Queued" "Starting" "Preparing" "Running" "Finalizing" "CancelRequested")
         while [[ ${running[*]} =~ $status ]]
         do
           sleep 15 
           status=$(az ml job show -n $run_id --query status -o tsv)
           echo $status
         done
-        if [[ "$status" = "Failed" ]]  
+        if [[ "$status" != "Completed" ]]  
         then
-          echo "Training Job failed"
+          echo "Training Job failed or canceled"
           exit 3
         fi
